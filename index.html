@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>زر تنزيل PDF</title>
+  <style>
+    body {
+      font-family: system-ui, Arial, "Segoe UI", "Noto Sans", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f5f7fb;
+      margin: 0;
+      direction: rtl;
+    }
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+      text-align: center;
+      width: 360px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .status { margin-top: 14px; color: #334155; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="card" role="region" aria-label="منطقة زر التحميل">
+    <h2>تحميل ملف PDF</h2>
+    <button id="downloadBtn" aria-label="زر تنزيل ملف PDF">تحميل الملف</button>
+    <div class="status" id="status">لم يتم التنزيل بعد.</div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('downloadBtn');
+    const status = document.getElementById('status');
+
+    // ضع هنا مسار الملف أو رابط الـ PDF الذي تريد تحميله
+    const pdfUrl = 'sample.pdf'; // تأكد أن sample.pdf موجود في نفس المجلد مع index.html
+
+    async function downloadPdf(url, filename = 'document.pdf') {
+      try {
+        const resp = await fetch(url, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('فشل الاستجابة: ' + resp.status);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+        status.textContent = 'تم تنزيل الملف.';
+      } catch (err) {
+        // حل احتياطي: تنزيل عبر رابط مباشر
+        try {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          status.textContent = 'تم تنزيل الملف (طريقة احتياطية).';
+        } catch (e) {
+          status.textContent = 'حدث خطأ أثناء التنزيل: ' + err.message;
+          console.error(err);
+        }
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      status.textContent = 'جاري التحضير للتنزيل...';
+      downloadPdf(pdfUrl, 'document.pdf');
+    });
+  </script>
+</body>
+</html>
